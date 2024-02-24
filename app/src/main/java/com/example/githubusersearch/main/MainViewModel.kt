@@ -4,9 +4,19 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.domain.models.GitHubUser
 import com.example.domain.usecases.SearchUsersUseCase
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNot
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 
 class MainViewModel(private val searchUsersUseCase: SearchUsersUseCase) : ViewModel() {
@@ -15,25 +25,53 @@ class MainViewModel(private val searchUsersUseCase: SearchUsersUseCase) : ViewMo
     private val _uiState = MutableStateFlow<UiState>(UiState.Empty)
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
-    // Function to initiate user search
-    fun searchUsers(keyword: String) {
-        // Avoid searching for empty queries
-        if (keyword.isBlank()) {
-            _uiState.value = UiState.Empty
-            return
-        }
+    private val searchQuery = MutableStateFlow("")
 
-        _uiState.value = UiState.Loading
-
+    init {
         viewModelScope.launch {
-            searchUsersUseCase(keyword).collect { result ->
-
-                _uiState.value = when  {
-                    result.isSuccess -> UiState.Success(result.getOrThrow())
-                    else -> UiState.Error(result.exceptionOrNull()?.message ?: "An error occurred")
+            searchQuery
+                .onEach { query ->
+                    if (query.isEmpty()) {
+                        _uiState.value = UiState.Empty
+                    }
                 }
-            }
+                .debounce(300L)
+                .distinctUntilChanged() // Ignore repeated sequential values
+                .flatMapLatest { query ->
+                    if (query.isEmpty()) {
+                        // Возвращаем flow, который немедленно завершается для пустого запроса
+                        flowOf(UiState.Empty)
+                    } else {
+                        searchUsersUseCase(query)
+                            .map { result ->
+                                when {
+                                    result.isSuccess -> UiState.Success(result.getOrThrow())
+                                    result.isFailure -> UiState.Error(
+                                        result.exceptionOrNull()?.message ?: "An error occurred"
+                                    )
+
+                                    else -> UiState.Loading // Эта ветка скорее всего не будет достигнута
+                                }
+                            }
+                            .onStart { emit(UiState.Loading) } // Показываем UI состояние загрузки перед запросом
+                    }
+                }
+                .catch { e ->
+                    if (e !is CancellationException) {
+                        _uiState.value = UiState.Error(e.message ?: "An unexpected error occurred")
+                    }
+                }
+                .collect { result ->
+                    // Эта логика теперь в flatMapLatest
+                    _uiState.value = result
+                }
         }
+    }
+
+    // Function to initiate user search
+    fun searchUsers(query: String) {
+        _uiState.value = UiState.Loading
+        searchQuery.value = query
     }
 
     // UI State sealed class to handle different UI states

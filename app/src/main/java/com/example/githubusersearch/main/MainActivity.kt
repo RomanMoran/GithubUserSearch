@@ -74,17 +74,24 @@ fun UserSearchScreen(viewModel: MainViewModel, navController: NavController) {
     Column {
         TextField(
             value = textState,
-            onValueChange = { textState = it },
+            onValueChange = {
+                textState = it
+                viewModel.searchUsers(textState)
+            },
             label = { Text("Search GitHub Users") }
         )
-        Button(onClick = { viewModel.searchUsers(textState) }) {
-            Text("Search")
-        }
 
         // Existing when statement for displaying loading, success, error, or empty states
         when (val uiState = viewModel.uiState.collectAsState().value) {
             is MainViewModel.UiState.Loading -> CircularProgressIndicator()
-            is MainViewModel.UiState.Success -> UserList(users = uiState.users, navController)
+            is MainViewModel.UiState.Success -> {
+                if (uiState.users.isEmpty()) {
+                    Text(text = "List is empty. Try something another")
+                } else {
+                    UserList(users = uiState.users, navController)
+                }
+            }
+
             is MainViewModel.UiState.Error -> Text(text = uiState.message)
             MainViewModel.UiState.Empty -> Text(text = "Please enter a search term.")
         }
