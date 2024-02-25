@@ -6,6 +6,7 @@ import com.example.data.source.remote.GitHubUserRemoteDataSource
 import com.example.data.source.remote.GitHubUserRemoteDataSourceImpl
 import com.example.domain.repositories.GitHubUserRepository
 import com.example.domain.usecases.SearchUsersUseCase
+import com.example.domain.usecases.SearchUsersUseCaseImpl
 import com.example.githubusersearch.BuildConfig
 import com.example.githubusersearch.main.MainViewModel
 import okhttp3.OkHttpClient
@@ -21,7 +22,7 @@ val appModule = module {
     single<GitHubApiService> { get<Retrofit>().create(GitHubApiService::class.java) }
     single<GitHubUserRemoteDataSource> { GitHubUserRemoteDataSourceImpl(apiService = get()) }
     single<GitHubUserRepository> { GitHubUserRepositoryImpl(remoteDataSource = get()) }
-    single { SearchUsersUseCase(gitHubUserRepository = get()) }
+    single<SearchUsersUseCase> { SearchUsersUseCaseImpl(gitHubUserRepository = get()) }
     viewModel { MainViewModel(searchUsersUseCase = get()) }
     // Add other dependencies
 }
