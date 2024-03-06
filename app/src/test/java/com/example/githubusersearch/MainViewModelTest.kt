@@ -1,8 +1,8 @@
 package com.example.githubusersearch
 
 import com.example.domain.models.GitHubUser
-import com.example.domain.usecases.SearchUsersUseCase
-import com.example.githubusersearch.main.MainViewModel
+import com.example.domain.usecases.search_users.SearchUsersUseCase
+import com.example.githubusersearch.screens.search.UserSearchViewModel
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.CompletableDeferred
@@ -28,7 +28,7 @@ class MainViewModelTest {
     private val mockUseCase = mock(SearchUsersUseCase::class.java)
 
     // Instantiate ViewModel
-    private lateinit var viewModel: MainViewModel
+    private lateinit var viewModel: UserSearchViewModel
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Before
@@ -37,7 +37,7 @@ class MainViewModelTest {
         Dispatchers.setMain(UnconfinedTestDispatcher())
 
         // Initialize ViewModel before each test
-        viewModel = MainViewModel(mockUseCase)
+        viewModel = UserSearchViewModel(mockUseCase)
     }
 
     @After
@@ -61,7 +61,7 @@ class MainViewModelTest {
 
         // Assert
         val lastState = viewModel.uiState.value
-        assertTrue("Expected Success state but was $lastState", lastState is MainViewModel.UiState.Success && lastState.users == users)
+        assertTrue("Expected Success state but was $lastState", lastState is UserSearchViewModel.UiState.Success && lastState.users == users)
 
     }
 
@@ -73,7 +73,7 @@ class MainViewModelTest {
         advanceUntilIdle()
 
         // Assert
-        assertEquals(MainViewModel.UiState.Empty, viewModel.uiState.value)
+        assertEquals(UserSearchViewModel.UiState.Empty, viewModel.uiState.value)
     }
 
     @Test
@@ -89,8 +89,8 @@ class MainViewModelTest {
         advanceUntilIdle()
 
         // Assert
-        assertTrue(viewModel.uiState.value is MainViewModel.UiState.Error)
-        assertEquals(errorMessage, (viewModel.uiState.value as MainViewModel.UiState.Error).message)
+        assertTrue(viewModel.uiState.value is UserSearchViewModel.UiState.Error)
+        assertEquals(errorMessage, (viewModel.uiState.value as UserSearchViewModel.UiState.Error).message)
     }
 
     @Test
@@ -105,7 +105,7 @@ class MainViewModelTest {
         viewModel.searchUsers("query")
 
         // Проверяем, что состояние было обновлено до Loading
-        assertTrue(viewModel.uiState.value is MainViewModel.UiState.Loading)
+        assertTrue(viewModel.uiState.value is UserSearchViewModel.UiState.Loading)
 
         // Завершаем операцию, чтобы не блокировать тест навсегда
         deferredResult.complete(Result.success(listOf(GitHubUser.createMockedInstance())))

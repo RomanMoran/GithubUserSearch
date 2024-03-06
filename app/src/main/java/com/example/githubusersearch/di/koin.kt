@@ -5,10 +5,12 @@ import com.example.data.services.GitHubApiService
 import com.example.data.source.remote.GitHubUserRemoteDataSource
 import com.example.data.source.remote.GitHubUserRemoteDataSourceImpl
 import com.example.domain.repositories.GitHubUserRepository
-import com.example.domain.usecases.SearchUsersUseCase
-import com.example.domain.usecases.SearchUsersUseCaseImpl
+import com.example.domain.usecases.animation_duration.AnimationDurationUseCase
+import com.example.domain.usecases.search_users.SearchUsersUseCase
+import com.example.domain.usecases.search_users.SearchUsersUseCaseImpl
 import com.example.githubusersearch.BuildConfig
-import com.example.githubusersearch.main.MainViewModel
+import com.example.githubusersearch.screens.search.UserSearchViewModel
+import com.example.githubusersearch.screens.splash.SplashViewModel
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.androidx.viewmodel.dsl.viewModel
@@ -22,8 +24,10 @@ val appModule = module {
     single<GitHubApiService> { get<Retrofit>().create(GitHubApiService::class.java) }
     single<GitHubUserRemoteDataSource> { GitHubUserRemoteDataSourceImpl(apiService = get()) }
     single<GitHubUserRepository> { GitHubUserRepositoryImpl(remoteDataSource = get()) }
+    single<AnimationDurationUseCase> { AnimationDurationUseCase() }
     single<SearchUsersUseCase> { SearchUsersUseCaseImpl(gitHubUserRepository = get()) }
-    viewModel { MainViewModel(searchUsersUseCase = get()) }
+    viewModel { SplashViewModel(animationDurationUseCase = get()) }
+    viewModel { UserSearchViewModel(searchUsersUseCase = get()) }
     // Add other dependencies
 }
 

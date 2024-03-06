@@ -1,14 +1,14 @@
-package com.example.githubusersearch.main
+package com.example.githubusersearch.screens.search
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.domain.models.GitHubUser
-import com.example.domain.usecases.SearchUsersUseCase
+import com.example.domain.usecases.search_users.SearchUsersUseCase
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-class MainViewModel(private val searchUsersUseCase: SearchUsersUseCase) : ViewModel() {
+class UserSearchViewModel(private val searchUsersUseCase: SearchUsersUseCase) : ViewModel() {
 
     // UI State represented as a StateFlow to emit updates to the UI layer
     private val _uiState = MutableStateFlow<UiState>(UiState.Empty)

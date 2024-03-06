@@ -1,4 +1,4 @@
-package com.example.domain.usecases
+package com.example.domain.usecases.search_users
 
 import com.example.domain.models.GitHubUser
 import kotlinx.coroutines.flow.Flow
