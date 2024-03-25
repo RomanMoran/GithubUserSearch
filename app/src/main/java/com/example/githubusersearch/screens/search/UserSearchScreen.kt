@@ -4,6 +4,7 @@ package com.example.githubusersearch.screens.search
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.CircularProgressIndicator
@@ -31,7 +32,7 @@ fun UserSearchScreen(userSearchViewModel: UserSearchViewModel, navController: Na
     // State for the text field
     var textState by remember { mutableStateOf("") }
 
-    Column {
+    Column(modifier = Modifier.fillMaxSize()) {
         TextField(
             value = textState,
             onValueChange = {

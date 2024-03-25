@@ -1,8 +1,10 @@
 package com.example.githubusersearch.screens.splash
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,18 +30,29 @@ import kotlinx.coroutines.delay
 fun SplashScreen(splashViewModel: SplashViewModel, navController: NavController) {
     // Предположим, что useCase возвращает длительность анимаций
     when (val uiState = splashViewModel.uiState.collectAsState().value) {
-        SplashViewModel.UiState.Empty -> TODO()
-        is SplashViewModel.UiState.Error -> TODO()
-        SplashViewModel.UiState.Loading -> TODO()
+        SplashViewModel.UiState.Empty -> {
+
+        }
+
+        is SplashViewModel.UiState.Error -> {
+
+        }
+
+        SplashViewModel.UiState.Loading -> {
+
+        }
+
         is SplashViewModel.UiState.Success -> {
             // Состояние для анимации скейлинга
             var startScaling by remember { mutableStateOf(false) }
             var startRotating by remember { mutableStateOf(false) }
+            var contentVisible by remember { mutableStateOf(true) }
+            var navigateToNextScreen by remember { mutableStateOf(false) }
 
             val scale = animateFloatAsState(
                 targetValue = if (startScaling) 1f else 0f, // Конечное значение масштаба
                 animationSpec = tween(
-                    durationMillis = 1000, // Продолжительность анимации 1 секунда
+                    durationMillis = uiState.duration.scaleDuration, // Продолжительность анимации 1 секунда
                     easing = LinearOutSlowInEasing // Эффект ускорения для более естественного движения
                 ),
                 finishedListener = {
@@ -49,11 +62,10 @@ fun SplashScreen(splashViewModel: SplashViewModel, navController: NavController)
 
             val rotation by animateFloatAsState(
                 targetValue = if (startRotating) 360f else 0f, // Начните вращение только после скейлинга
-                animationSpec = tween(durationMillis = 1500),
+                animationSpec = tween(durationMillis = uiState.duration.rotationDuration),
                 finishedListener = {
-                    navController.navigate(Screens.USERS_LIST) {
-                        popUpTo(Screens.SPLASH) { inclusive = true }
-                    }
+                    contentVisible = false // Скрываем контент после завершения анимации
+                    navigateToNextScreen = true // Готовы к навигации
                 }
             )
 
@@ -66,14 +78,23 @@ fun SplashScreen(splashViewModel: SplashViewModel, navController: NavController)
                     painter = painterResource(id = R.drawable.bg_github),
                     contentDescription = "Splash Image",
                     modifier = Modifier
+                        .fillMaxSize()
                         .graphicsLayer {
                             scaleX = scale.value
                             scaleY = scale.value
-                            rotationZ = rotation // Примените анимацию вращения здесь
+                            rotationZ = rotation
                         }
-                        .size(150.dp)
                 )
             }
+
+            LaunchedEffect(navigateToNextScreen) {
+                if (navigateToNextScreen) {
+                    navController.navigate(Screens.USERS_LIST) {
+                        popUpTo(Screens.SPLASH) { inclusive = true }
+                    }
+                }
+            }
+
 
         }
     }

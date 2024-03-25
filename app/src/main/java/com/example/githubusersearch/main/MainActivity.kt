@@ -3,6 +3,9 @@ package com.example.githubusersearch.main
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -43,7 +46,13 @@ fun AppNavigationContent(
     userSearchViewModel: UserSearchViewModel
 ) {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = Screens.SPLASH) {
+    NavHost(navController = navController, startDestination = Screens.SPLASH,
+        enterTransition = {
+            // Определите анимацию появления для входящего экрана
+            fadeIn(animationSpec = tween(1500))
+        },
+        exitTransition =  { fadeOut(animationSpec = tween(1500)) } ,
+    ) {
         composable(Screens.SPLASH) {
             SplashScreen(splashViewModel = splashViewModel, navController = navController)
         }

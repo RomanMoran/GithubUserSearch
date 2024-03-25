@@ -5,7 +5,7 @@ import com.example.domain.models.AnimationDuration
 class AnimationDurationUseCase {
 
     fun getAnimationDuration(): AnimationDuration {
-        return AnimationDuration(scaleDuration = 10_000, rotationDuration = 13_500)
+        return AnimationDuration(scaleDuration = 500, rotationDuration = 1_500)
     }
 }
 
